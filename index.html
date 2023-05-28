@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Memory Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            display: inline-block;
+            width: 100px;
+            height: 150px;
+            background-color: #f00;
+            border-radius: 10px;
+            margin: 10px;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .card-front {
+            background-color: #ffcc00;
+        }
+
+        .card-back {
+            background-color: #333;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Game</h1>
+    <div id="game-container"></div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const cards = [
+            { id: 1, color: '#ff0000' },
+            { id: 2, color: '#00ff00' },
+            { id: 3, color: '#0000ff' },
+            { id: 4, color: '#ffff00' },
+            { id: 5, color: '#ff00ff' },
+            { id: 6, color: '#00ffff' },
+            { id: 7, color: '#f0f0f0' },
+            { id: 8, color: '#0f0f0f' },
+        ];
+
+        let flippedCards = [];
+        let matchedCards = [];
+
+        // Function to shuffle the cards randomly
+        function shuffleCards(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to create the card elements in the game container
+        function createCards() {
+            const shuffledCards = shuffleCards(cards.concat(cards));
+
+            shuffledCards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+
+                const cardInner = document.createElement('div');
+                cardInner.classList.add('card-inner');
+
+                const cardFront = document.createElement('div');
+                cardFront.classList.add('card-face', 'card-front');
+                cardFront.style.backgroundColor = card.color;
+
+                const cardBack = document.createElement('div');
+                cardBack.classList.add('card-face', 'card-back');
+
+                cardInner.appendChild(cardFront);
+                cardInner.appendChild(cardBack);
+                cardElement.appendChild(cardInner);
+                gameContainer.appendChild(cardElement);
+            });
+
+            // Add click event listener to each card
+            const cardElements = document.querySelectorAll('.card');
+            cardElements.forEach(card => {
+                card.addEventListener('click', handleCardClick);
+            });
+        }
+
+        // Function to handle card click event
+        function handleCardClick() {
+            const card = this;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                const card1 = flippedCards[0];
+                const card2 = flippedCards[1];
+
+                const id1 = card1.dataset.id;
+                const id2 = card2.dataset.id;
+
+                if (id1 === id2) {
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedCards.push(card1, card2);
+                    checkGameEnd();
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                    }, 1000);
+                }
+
+                flippedCards = [];
+            }
+        }
+
+        // Function to check if all cards are matched and end the game
+        function checkGameEnd() {
+            if (matchedCards.length === cards.length * 2) {
+                setTimeout(() => {
+                    alert('Congratulations! You matched all the cards!');
+                }, 500);
+            }
+        }
+
+        // Initialize the game
+        createCards();
+    </script>
+</body>
+</html>
